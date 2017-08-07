@@ -1,0 +1,7 @@
+# This configuration for setup the repository.
+# ./inotif-ssh.sh -n [repo_name] -h [repo_host] -u git -p [repo_pass]
+
+#repo_name="inotif.git"
+#repo_host="192.168.111.11"
+#repo_user="git"
+#repo_pass="passwordforgit"

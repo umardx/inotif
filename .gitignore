@@ -1,0 +1,4 @@
+conf/*.cfg
+conf/*.dir
+log/*
+run.sh

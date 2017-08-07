@@ -1,0 +1,12 @@
+# Config for inotif directory.
+# Unformatted lines will be ignored.
+# [host]:[directory]:[username]:[password]:[port]
+
+# Inotif client tested on : 	FreeBSD 10.3, FreeBSD 11.1
+								Ubuntu 16.04, Debian 8.8
+
+# Example :
+# 192.168.114.35:/etc:git:P4SsWoRd:22
+# 192.168.114.35:/opt:git:P4SsWoRd:22
+
+# This is end of line (at least there is the last line)
