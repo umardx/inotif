@@ -4,96 +4,110 @@ This lets you use git to review changes that were made to directory that you mon
 
 # Setup for server
 
-## git init --bare as `git` user (depending on username used)
+## Setup repository : `git init --bare`
 ```bash
-$ mkdir /home/git/repository
-$ git init --bare /home/git/repository/inotif.git
-Initialized empty Git repository in /home/git/repository/inotif.git/
-$ sudo ln -s /home/git/repository /git
-$ sudo chown git:git /git
+$ sudo mkdir -p /var/www/repository
+$ cd /var/www/repository
+$ sudo git init --bare /var/www/repository/inotif.git
+Initialized empty Git repository in /var/www/repository/inotif.git
+# sudo sh -c 'echo "Inotif repository." > /var/www/repository/inotif.git/description'
+$ sudo chown -R www-data:www-data /var/www/repository
+```
+### modify `/etc/gitweb.conf`
+```
+# path to git projects (<project>.git)
+$projectroot = "/var/www/repository";
+
+# directory to use for temp files
+$git_temp = "/tmp";
+
+# target of the home link on top of all pages
+$home_link = $my_uri || "/";
+
+# html text to include at home page
+$home_text = "indextext.html";
+
+# file with project list; by default, simply scan the projectroot dir.
+$projects_list = $projectroot;
+
+# stylesheet to use
+@stylesheets = ("static/gitweb.css");
+
+# javascript code for gitweb
+$javascript = "static/gitweb.js";
+
+# logo to use
+$logo = "static/git-logo.png";
+$logo_url = ".";
+$logo_label = "Local Git Repositories";
+
+# the 'favicon'
+#$favicon = "static/git-favicon.png";
+
+# git-diff-tree(1) options to use for generated patches
+#@diff_opts = ("-M");
+@diff_opts = ();
+
+# This prevents gitweb to show hidden repositories
+#$export_ok = "git-daemon-export-ok";
+#$strict_export = 1;
+
+# This lets it make the URLs you see in the header
+@git_base_url_list = ( 'http://localhost/git' );
+
+# Features: syntax highlighting and blame view
+$feature{'highlight'}{'default'} = [1];
+$feature{'blame'}{'default'} = [1];
+
 ```
 ## setup gitweb
 ```bash
-$ sudo apt-get install -y git gitweb fcgiwrap spawn-fcgi nginx libcgi-fast-perl highlight
-$ git clone https://github.com/umardx/inotif.git
-$ mv conf/gitweb.conf /home/git/gitweb.conf
+$ sudo apt-get install -y git gitweb fcgiwrap spawn-fcgi nginx libcgi-fast-perl highlight apache2-utils
 ```
 ### add server block for nginx configuration
 ```
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server ipv6only=on;
-    #root /var/www/...;
-    # Server name is used in the title of GitWeb pages
-    server_name localhost;
+    listen       8080;
+    server_name local_repositories;
+    root /usr/share/gitweb;
+    access_log /var/log/nginx/git.access.log;
 
-    location / {
-        try_files $uri $uri/ /index.html;
+    auth_basic           "GIT LOGIN";
+    auth_basic_user_file /home/git/.htpasswd;
+
+    # static repo files for cloning over https
+    location ~ ^.*\.git/objects/([0-9a-f]+/[0-9a-f]+|pack/pack-[0-9a-f]+.(pack|idx))$ {
+        root /home/git/repositories/;
     }
 
-    # Git over HTTP
-    location ~ ^/git/.*\.git/objects/([0-9a-f]+/[0-9a-f]+|pack/pack-[0-9a-f]+.(pack|idx))$ {
-        root /home/git;
-    }
-    # Remove git-receive-pack in next line to forbid push to this server
-    location ~ ^/git/(.*\.git/(HEAD|info/refs|objects/info/.*|git-(upload|receive)-pack))$ {
-        rewrite ^/git(/.*)$ $1 break;
+    # requests that need to go to git-http-backend
+    location ~ ^.*\.git/(HEAD|info/refs|objects/info/.*|git-(upload|receive)-pack)$ {
+        root /home/git/repositories;
+
         fastcgi_pass unix:/var/run/fcgiwrap.socket;
-        fastcgi_param SCRIPT_FILENAME     /usr/lib/git-core/git-http-backend;
-        fastcgi_param PATH_INFO           $uri;
-        fastcgi_param GIT_PROJECT_ROOT    /home/git/repository;
+        fastcgi_param SCRIPT_FILENAME   /usr/lib/git-core/git-http-backend;
+        fastcgi_param PATH_INFO         $uri;
+        fastcgi_param GIT_PROJECT_ROOT  /home/git/repositories;
         fastcgi_param GIT_HTTP_EXPORT_ALL "";
+        fastcgi_param REMOTE_USER $remote_user;
         include fastcgi_params;
     }
 
-    # Git web
-    location /git/static/ {
-        alias /usr/share/gitweb/static/;
-    }
-    location /git/ {
+    # send anything else to gitweb if it's not a real file
+    try_files $uri @gitweb;
+    location @gitweb {
         fastcgi_pass unix:/var/run/fcgiwrap.socket;
-        fastcgi_param SCRIPT_FILENAME     /usr/share/gitweb/gitweb.cgi;
-        fastcgi_param PATH_INFO           $uri/git;
-        fastcgi_param GITWEB_CONFIG       /home/git/gitweb.conf;
-        fastcgi_param GIT_HTTP_EXPORT_ALL "";
+        fastcgi_param SCRIPT_FILENAME   /usr/share/gitweb/gitweb.cgi;
+        fastcgi_param PATH_INFO         $uri;
+        fastcgi_param GITWEB_CONFIG     /etc/gitweb.conf;
         include fastcgi_params;
-    }
+   }
 }
 ```
-### add server block for apache configuration
+You can add a username to the file using this command. You'll need to authenticate, then specify and confirm a password. For example using `git` as username, but you can use whatever name you'd like:
 ```
-<VirtualHost *:80>
-    ServerName localhost
-
-    SetEnv GIT_PROJECT_ROOT /home/git/repository
-    SetEnv GIT_HTTP_EXPORT_ALL
-
-    AliasMatch ^/git/(.*/objects/[0-9a-f]{2}/[0-9a-f]{38})$          /home/git/$1
-    AliasMatch ^/git/(.*/objects/pack/pack-[0-9a-f]{40}.(pack|idx))$ /home/git/$1
-    # Remove git-receive-pack in next line to forbid push to this server
-    ScriptAliasMatch \
-            "(?x)^/git/(.*/(HEAD | \
-                            info/refs | \
-                            objects/info/[^/]+ | \
-                            git-(upload|receive)-pack))$" \
-            /usr/libexec/git-core/git-http-backend/$1
-
-    ScriptAlias /git/ /usr/share/gitweb/gitweb.cgi/
-    Alias /git /usr/share/gitweb
-    <Directory "/usr/share/gitweb/">
-        AddHandler cgi-script .cgi
-        DirectoryIndex gitweb.cgi
-        Options +ExecCGI
-
-        AllowOverride None
-        Order allow,deny
-        Allow from all
-
-        SetEnv GITWEB_CONFIG /home/git/gitweb.conf
-    </Directory>
-</VirtualHost>
+$ sudo htpasswd -c /etc/nginx/.htpasswd git
 ```
-
 ### If you want to change the design theme
 Install gitweb-theme:
 ```bash
