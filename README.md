@@ -19,7 +19,7 @@ $ sudo sh -c 'echo "Inotif repository." > /var/www/git/inotif.git/description'
 $ sudo chown -R www-data:www-data /var/www/git
 ```
 modify `/etc/gitweb.conf`
-```
+```bash
 # path to git projects (<project>.git)
 $projectroot = "/var/www/git";
 
@@ -63,11 +63,9 @@ $logo_label = "Local Git Repositories";
 # Features: syntax highlighting and blame view
 $feature{'highlight'}{'default'} = [1];
 $feature{'blame'}{'default'} = [1];
-
-
 ```
 add server block for nginx configuration
-```
+```bash
 server {
     listen 8080;
     server_name local_git;
@@ -110,7 +108,7 @@ server {
 }
 ```
 You can add a username to the file using this command. You'll need to authenticate, then specify and confirm a password. For example using `git` as username, but you can use whatever name you'd like:
-```
+```bash
 $ sudo htpasswd -c /etc/nginx/.htpasswd git
 ```
 If you want to change the design theme
@@ -122,7 +120,7 @@ $ sudo sh -c '/usr/share/gitweb/gitweb-theme/setup --install'
 ```
 ## Setup consul for remote environment:
 Consul must be downloaded and unzipped. The software comes as a single statically linked binary which makes the installation very simple: It can simply be placed in a directory which is listed in $PATH. I used /usr/local/bin for this purpose.
-```
+```bash
 $ sudo apt-get -y install unzip
 $ wget https://releases.hashicorp.com/consul/0.9.0/consul_0.9.0_linux_amd64.zip
 $ unzip consul_0.9.0_linux_amd64.zip
@@ -130,7 +128,7 @@ $ sudo mv consul /usr/local/bin/
 $ rm consul_0.9.0_linux_amd64.zip
 ```
 To automatically start Consul an Init and Systemd Script can be downloaded [here](https://gist.github.com/umardx/675ab11330bf10b9a308b02fc411eb35). The init script or systemd script defines /etc/consul/ as the configuration directory for Consul. This directory must be created and populated with a Consul configuration file.
-```
+```bash
 # mkdir -p /etc/consul
 # cat << EOF > /etc/consul/config.json
 {
@@ -156,17 +154,17 @@ To automatically start Consul an Init and Systemd Script can be downloaded [here
 EOF
 ```
 To generates an encryption key that can be used for Consul agent traffic encryption. The keygen command uses a cryptographically strong pseudo-random number generator to generate the key.
-```
+```bash
 $ consul keygen
 yJ9iwAO918Zb9RzaHDSUcA=="
 ```
 The parameter `bootstrap_expect` is set to 1 (add node at `retry-join` parameter to add more bootstrap) which means consul will wait for at least 1 nodes to appear before a leader election will happen. So don’t expect a lot to happen at this point. These steps must be repeated on every other Consul server instance. Make sure to adjust the values for `node_name`, `client_addr`, and `bind_addr` to match the configuration of the particular node.
 ## Troubleshooting
 If you see ngingx error.log say something like
-```
+```bash
 connect() to unix:/var/run/fcgiwrap.socket failed (13: Permission denied) while connecting
 ```
 then check the owner:group of /var/run/fcgiwrap.socket (it should be www-data:www-data). If not, just restart FCGIwrap:
-```
+```bash
 $ sudo /bin/systemctl restart fcgiwrap nginx
 ```
