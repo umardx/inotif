@@ -11,7 +11,7 @@ setup_repo(){
 	for dir_name in $dir_list; do		
 		if [ -d "$HOME/.inotif"$dir_name"" ] || mkdir -p "$HOME/.inotif"$dir_name""; then
 			# rsync folder        
-		    rsync -aq --delete --max-size=1.0m --exclude=.git* --exclude=.git "$dir_name"/ ~/.inotif"$dir_name"/ > /dev/null 2>&1
+		    rsync -aq --delete --max-size=1.0m --exclude=.git* --exclude=.git "$dir_name"/ $HOME/.inotif"$dir_name"/ > /dev/null 2>&1
 		fi
 	done
 	git add -A > /dev/null 2>&1
