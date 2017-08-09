@@ -1,0 +1,4 @@
+# Inotif environment
+consul_addr="192.168.114.xx:8500"
+repo_url="http://username:password@192.168.114.yy:8080/inotif.git"
+dir_list="/etc"
