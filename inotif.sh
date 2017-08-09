@@ -7,11 +7,6 @@ exit1() {
  	exit 1;
 }
 
-success1() {
-	echo "OK"
- 	echo "$1"
-}
-
 #load config file
 . conf/inotif.conf
 
@@ -22,12 +17,6 @@ check_repo="$dir_default $(curl $consul_address/v1/kv/inotif/$branch?raw | jq .r
 if [ ! -z "$check_repo" ]; then
 	repo_url="$check_repo"
 fi
-
-# checking dependency in remote ssh host
-hash git > /dev/null 2>&1 || exit1 "git not installed."
-hash rsync > /dev/null 2>&1 || exit1 "rsync not installed."
-hash curl > /dev/null 2>&1 || exit1 "curl not installed."
-hash jq > /dev/null 2>&1 || exit1 "jq not installed."
 
 #push change
 setup_repo(){
@@ -45,9 +34,9 @@ setup_repo(){
 		git add -A > /dev/null 2>&1
 		git commit -m "auto commit" > /dev/null 2>&1
 		git push --set-upstream origin $branch > /dev/null 2>&1
-		success1 "Pushed"
+		echo "Pushed" $dir_list
 	else 
-	 	success1 "Nothing to commit";
+	 	echo "Nothing to commit";
 	fi
 }
 
