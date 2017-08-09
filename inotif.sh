@@ -12,28 +12,22 @@ success1() {
  	echo "$1"
 }
 
-error_git="fatal error refused"
-
 #load config file
 . conf/inotif.conf
 
 branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
 
 dir_list="$dir_default $(curl $consul_address/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")" > /dev/null 2>&1
-# check_repo=$(git ls-remote $repo_url)
-# echo $check_repo
-
-
-# case "$error_git" in 
-# 	$check_repo) 
-# 	repo_url=$(curl $consul_address/v1/kv/inotif/config?raw | jq .repo_url | sed "s/\"/ /g") 
-# 	;;
-# esac
+check_repo="$dir_default $(curl $consul_address/v1/kv/inotif/$branch?raw | jq .repo_url | sed "s/\"/ /g")" > /dev/null 2>&1
+if [ ! -z $check_repo ]; then
+	repo_url=$check_repo
+fi
 
 # checking dependency in remote ssh host
 hash git > /dev/null 2>&1 || exit1 "git not installed."
 hash rsync > /dev/null 2>&1 || exit1 "rsync not installed."
 hash curl > /dev/null 2>&1 || exit1 "curl not installed."
+hash jq > /dev/null 2>&1 || exit1 "jq not installed."
 
 #push change
 setup_repo(){
