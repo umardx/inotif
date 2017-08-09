@@ -1,3 +1,8 @@
-consul="192.168.114.35:8500"							# consul address including port
-repo="http://git:git@192.168.114.35:8080/inotif.git"	# complete git repo url
-dir="/etc"												# default watch directory
+# consul address including port
+consul="192.168.114.35:8500"
+
+# complete git repo url
+repo="http://git:git@192.168.114.35:8080/inotif.git"
+
+# default watch directory
+dir="/etc"
