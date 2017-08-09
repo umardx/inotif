@@ -19,8 +19,8 @@ branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]
 
 dir_list="$dir_default $(curl $consul_address/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")" > /dev/null 2>&1
 check_repo="$dir_default $(curl $consul_address/v1/kv/inotif/$branch?raw | jq .repo_url | sed "s/\"/ /g")" > /dev/null 2>&1
-if [ ! -z $check_repo ]; then
-	repo_url=$check_repo
+if [ ! -z "$check_repo" ]; then
+	repo_url="$check_repo"
 fi
 
 # checking dependency in remote ssh host
