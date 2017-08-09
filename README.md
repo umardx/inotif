@@ -141,7 +141,7 @@ To automatically start Consul an Init and Systemd Script can be downloaded [here
     "log_level": "INFO",
     "enable_syslog": true,
     "enable_debug": true,
-    "node_name": "inotif-node",
+    "node_name": "inotig-node",
     "server": true,
     "bootstrap_expect": 1,
     "leave_on_terminate": false,
