@@ -4,7 +4,7 @@
   remote_user: root
 
   vars:
-     basic_packages: [ 'git', 'rsync', 'curl' ]
+     basic_packages: [ 'jq', 'git', 'rsync', 'curl' ]
 
   tasks:
     - name: Create user inotif
