@@ -1,10 +1,11 @@
 #!/bin/sh
-# set -x
+set -x
 
 #load config file
 . conf/inotif.conf
 
 branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)"
+
 dir_list="$dir_default $(curl $consul_address/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
 if [ ! $? -eq 0 ]; then
 	repo_url=$(curl $consul_address/v1/kv/inotif/config?raw | jq .repo_url | sed "s/\"/ /g")
@@ -21,6 +22,8 @@ setup_repo(){
 		fi
 	done
 	git add -A > /dev/null 2>&1
+	git config user.name $USER
+	git config user.email $USER@$branch
 	git commit -m "auto commit" > /dev/null 2>&1
 	git push --set-upstream origin $branch
 }
