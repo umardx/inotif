@@ -171,24 +171,32 @@ then check the owner:group of /var/run/fcgiwrap.socket (it should be www-data:ww
 $ sudo /bin/systemctl restart fcgiwrap nginx
 ```
 
-### Setup Agent
+# Setup for Clent
+Clone git repository
+```
+$ git clone https://github.com/umardx/inotif.git
+$ cd ./inotif
+```
+Create user: `inotif` with shell `/bin/sh`
+```bash
+$ sudo adduser inotif
+```
+## Debian, or Ubuntu
+Installing inotif as service
+```bash
+$ sudo cp ./inotif /usr/local/bin/
+$ sudo cp init.d/inotif /etc/init.d/
+$ sudo cp conf/inotif.conf /etc/
+$ sudo update-rc.d inotif defaults
+$ sudo update-rc.d inotif enable
+```
+Based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-configure-a-linux-service-to-start-automatically-after-a-crash-or-reboot-part-1-practical-examples)
 
-#### Debian derivative
-- Create user with name: Inotif
-- Do this:
-> sudo cp inotif /usr/local/bin/
-> sudo cp init.d/inotif /etc/init.d/
-> sudo cp conf/inotif.conf /etc/
-> sudo update-rc.d inotif defaults
-> sudo update-rc.d inotif enable
-
-Based on [this](https://www.digitalocean.com/community/tutorials/how-to-configure-a-linux-service-to-start-automatically-after-a-crash-or-reboot-part-1-practical-examples)
-
-#### FreeBSD
-- Create user with name: Inotif
-- Do this:
-> sudo cp inotif /usr/local/bin/...
-> sudo cp rc.d/inotif /etc/rc.d/
-> sudo cp conf/inotif.conf /etc/
-
-Based on: [this](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [this](ttps://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
+## FreeBSD
+Installing inotif as service
+```bash
+$ sudo cp inotif /usr/local/bin/
+$ sudo cp rc.d/inotif /etc/rc.d/
+$ sudo cp conf/inotif.conf /etc/
+```
+Based on: [this tutorial](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [this tutorial](ttps://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
