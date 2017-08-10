@@ -7,7 +7,7 @@ exit1() {
  	exit 1;
 }
 
-# load inotif configuration
+# Load inotif configuration
 if [ -f /etc/inotif.conf ]; then
     CONF="/etc/inotif.conf"
 elif [ -f conf/inotif.conf ]; then
@@ -20,6 +20,7 @@ user=$(whoami)
 home=$(getent passwd $user | cut -d: -f6)
 branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
 
+# Clear variable to avoid cache.
 check_repo='' && dir_list=''
 dir_list="$dir_default $(curl -s $consul_address/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
 check_repo="$(curl -s $consul_address/v1/kv/inotif/config?raw | jq .repo_url | sed "s/\"/ /g")"
@@ -56,6 +57,7 @@ setup_repo(){
 # Change to inotif directory.
 cd $home/.inotif
 # Just updating git repository if git already installed.
+# or reinit git when git not installed.
 if [ -d "$home/.inotif/.git" ]; then
 	# Only pull specific branch from repository.
 	git pull origin $branch > /dev/null 2>&1
@@ -63,19 +65,16 @@ if [ -d "$home/.inotif/.git" ]; then
 	# Doing setup repo
 	setup_repo
 else
-	#delete folder
 	rm -rf $home/.inotif/* 
-	# clone branch_dir from remote repository if git not installed on branch_dir.
+	# Clone if remote repository already stored.
 	git clone -b $branch $repo_url ./ > /dev/null 2>&1 
-	#if clone success
 	if [ $? -eq 0 ]; then
-		#rsync
+		# Doing setup repo
 		setup_repo
-	#if clone error
 	else
-		#init
+		# Init git if on repository doesn't exists.
 		git init > /dev/null 2>&1
-		#rsync
+		# Doing setup repo
 		setup_repo
 	fi
 fi
