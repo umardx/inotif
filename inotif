@@ -1,6 +1,6 @@
 #!/bin/sh
 PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/bin:/usr/bin"
-set -x
+#@set -x
 exit1() {
 	echo "FAIL"
  	echo "$1"
@@ -16,6 +16,7 @@ else
     exit1 "can't found inotif.conf"
 fi
 . $CONF
+
 user=$(whoami)
 home=$(getent passwd $user | cut -d: -f6)
 branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
