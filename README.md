@@ -190,7 +190,7 @@ $ sudo cp conf/inotif.conf /etc/
 $ sudo update-rc.d inotif defaults
 $ sudo update-rc.d inotif enable
 ```
-Based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-configure-a-linux-service-to-start-automatically-after-a-crash-or-reboot-part-1-practical-examples)
+Based on [here](https://www.digitalocean.com/community/tutorials/how-to-configure-a-linux-service-to-start-automatically-after-a-crash-or-reboot-part-1-practical-examples)
 
 ## FreeBSD
 Installing inotif as service
@@ -199,4 +199,4 @@ $ sudo cp inotif /usr/local/bin/
 $ sudo cp rc.d/inotif /etc/rc.d/
 $ sudo cp conf/inotif.conf /etc/
 ```
-Based on: [tutorial1](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [tutorial2](ttps://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
+Based on: [here](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [here](https://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
