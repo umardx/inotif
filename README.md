@@ -199,5 +199,4 @@ $ sudo cp inotif /usr/local/bin/
 $ sudo cp rc.d/inotif /etc/rc.d/
 $ sudo cp conf/inotif.conf /etc/
 ```
-Based on: [this tutorial](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html)
-and [this tutorial](ttps://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
+Based on: [tutorial1](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [tutorial2](ttps://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
