@@ -1,5 +1,5 @@
 #!/bin/sh
-PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/bin:/usr/bin"
+PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin"
 #@set -x
 exit1() {
 	echo "FAIL"
@@ -35,7 +35,8 @@ setup_repo(){
 	git remote add origin $repo_url > /dev/null 2>&1 || git remote set-url origin $repo_url > /dev/null 2>&1
 	for dir_name in $dir_list; do		
 		if [ -d "$home/.inotif"$dir_name"" ] || mkdir -p "$home/.inotif"$dir_name""; then
-			# Rsync required folder that max size 1MB, and don't forget to exclude git config.
+			# Rsync required folder that max size 1MB, and don't forget to exclude git config
+			# file contain error permission denied will be skiped.
 		    rsync -aq --delete --max-size=1.0m --exclude=.git* --exclude=.git "$dir_name"/ $home/.inotif"$dir_name"/ > /dev/null 2>&1
 		fi
 	done
@@ -43,7 +44,7 @@ setup_repo(){
 	git config user.email $user@$branch
 	if [ -n "$(git status --porcelain)" ]; then
 		git add -A > /dev/null 2>&1
-		git commit -m "auto commit" > /dev/null 2>&1
+		git commit -m "inotif-commit" > /dev/null 2>&1
 		git push origin $branch
 		echo "Pushed" $dir_list
 	else 
