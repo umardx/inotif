@@ -101,3 +101,25 @@ $ cd /usr/share/gitweb
 $ sudo git clone git://github.com/kogakure/gitweb-theme
 $ sudo /usr/share/gitweb/gitweb-theme/setup --install
 ```
+
+### Setup Agent
+
+#### Debian derivative
+- Create user with name: Inotif
+- Do this:
+> sudo cp inotif /usr/local/bin/
+> sudo cp init.d/inotif /etc/init.d/
+> sudo cp conf/inotif.conf /etc/
+> sudo update-rc.d inotif defaults
+> sudo update-rc.d inotif enable
+
+Based on [this](https://www.digitalocean.com/community/tutorials/how-to-configure-a-linux-service-to-start-automatically-after-a-crash-or-reboot-part-1-practical-examples)
+
+#### FreeBSD
+- Create user with name: Inotif
+- Do this:
+> sudo cp inotif /usr/local/bin/...
+> sudo cp rc.d/inotif /etc/rc.d/
+> sudo cp conf/inotif.conf /etc/
+
+Based on: [this](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [this](ttps://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
