@@ -1,7 +1,6 @@
 #!/bin/sh
 PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/bin:/usr/bin"
 set -x
-
 exit1() {
 	echo "FAIL"
  	echo "$1"
@@ -19,7 +18,7 @@ fi
 . $CONF
 user=$(whoami)
 home=$(getent passwd $user | cut -d: -f6)
-branch="$(/sbin/ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
+branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
 
 check_repo='' && dir_list=''
 dir_list="$dir_default $(curl -s $consul_address/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
@@ -27,14 +26,14 @@ check_repo="$(curl -s $consul_address/v1/kv/inotif/config?raw | jq .repo_url | s
 if [ ! -z "$check_repo" ]; then
 	repo_url="$check_repo"
 fi
-pwd
-#push change
+
+# Setup git init.
 setup_repo(){
 	git checkout -B $branch > /dev/null 2>&1
-	git remote add origin $repo_url || git remote set-url origin $repo_url
+	git remote add origin $repo_url > /dev/null 2>&1 || git remote set-url origin $repo_url > /dev/null 2>&1
 	for dir_name in $dir_list; do		
 		if [ -d "$home/.inotif"$dir_name"" ] || mkdir -p "$home/.inotif"$dir_name""; then
-			# rsync folder        
+			# Rsync required folder that max size 1MB, and don't forget to exclude git config.
 		    rsync -aq --delete --max-size=1.0m --exclude=.git* --exclude=.git "$dir_name"/ $home/.inotif"$dir_name"/ > /dev/null 2>&1
 		fi
 	done
@@ -50,17 +49,18 @@ setup_repo(){
 	fi
 }
 
-#make dir if not exist
-mkdir -p $home/.inotif
-#go to dir
+# Create inotif directory if doesn't exist.
+# This directory will be used to store the monitored file or directory.
+[-d $home/.inotif ] mkdir -p $home/.inotif
+
+# Change to inotif directory.
 cd $home/.inotif
-#if folder .inotif/.git no found
+# Just updating git repository if git already installed.
 if [ -d "$home/.inotif/.git" ]; then
-	#pull
+	# Only pull specific branch from repository.
 	git pull origin $branch > /dev/null 2>&1
-	#stash diff
 	git stash > /dev/null 2>&1
-	#rsync
+	# Doing setup repo
 	setup_repo
 else
 	#delete folder
