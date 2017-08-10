@@ -1,0 +1,27 @@
+---
+
+- hosts: inotif
+  remote_user: root
+
+  vars:
+     basic_packages: [ 'jq', 'git', 'rsync', 'curl' ]
+
+  tasks:
+    - name: Create user inotif
+      user: name=inotif shell=/bin/sh
+
+    - name: Install basic packages on FreeBSD
+        pkg: name={{ item }} state=installed
+        with_items: basic_packages
+        when: (ansible_distribution == 'FreeBSD')
+        
+    - name: Install basic packages on Debian
+        apt: name={{ item }} state=installed
+        with_items: basic_packages
+        when: (ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian')
+
+    - include Task/FreeBSD-task.yml
+      when: ansible_distribution == "FreeBSD"
+
+    - include Task/Debian-task.yml
+      when: (ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian')
