@@ -172,6 +172,7 @@ $ sudo /bin/systemctl restart fcgiwrap nginx
 ```
 
 # Setup for Clent
+#### Tested on Ubuntu 16.04, Debian 8.8, and FreeBSD 10.3.
 Clone git repository
 ```
 $ git clone https://github.com/umardx/inotif.git
