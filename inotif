@@ -1,5 +1,5 @@
 #!/bin/sh
-PATH=/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin
+PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin"
 set -x
 
 exit1() {
