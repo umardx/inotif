@@ -8,7 +8,7 @@
 
 name=inotif
 rcvar=inotif_enable
-
+inotif_user="inotif"
 command="/usr/local/bin/inotif"
 
 load_rc_config $name
