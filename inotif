@@ -9,16 +9,17 @@ exit1() {
  	exit 1;
 }
 
-# function for get verified interval
+# function for get or generate verified interval in range 5-10 minutes.
 verify_interval() {
-	local v=$(echo $1 | awk '( $1 >= 60) && ($1 <= 120) { print $1 }')
-	[ ! -z $v ] || v=$interval
+	local v=$(echo $1 | awk '( $1 >= 300) && ($1 <= 600) { print $1 }')
+	[ ! -z $v ] || v=300
 	echo $v
 }
 
+# Handling error.
 check_requirements() {
 	# checking required variables
-	if [ -z $interval ] || [ -z $consul ] || [ -z $repo ] || [ -z $dir ]; then
+	if [ -z $interval ] || [ -z $consul ] || [ -z $repo ] || [ -z $dir ] || [ -z $branch ]; then
 		exit1 "can't load variables completely."
 	fi
 
@@ -27,9 +28,33 @@ check_requirements() {
 	hash git > /dev/null 2>&1 || exit1 "Errpr: git not installed."
 	hash curl > /dev/null 2>&1 || exit1 "Errpr: curl not installed."
 	hash rsync > /dev/null 2>&1 || exit1 "Error: rsync not installed."
+}
 
-	# checking branch_dir
-	[ -d $branch_dir > /dev/null 2>&1 ] || exit1 "The $branch_dir directory doesn't exist."
+# Load and get inotif configuration
+load_environments() {
+	if [ -f /etc/inotif.conf ]; then
+	    CONF="/etc/inotif.conf"
+	elif [ -f conf/inotif.conf ]; then
+	    CONF="conf/inotif.conf"
+	else
+	    exit1 "can't found inotif.conf"
+	fi
+	. $CONF
+
+	# Define username and branch name for git config
+	user=$(whoami)
+	home=$(getent passwd $user | cut -d: -f6)
+	branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
+
+	# Clear variable to avoid cache.
+	repo_tmp='' && dir_list=''
+	# Get additional directory to dir_list.
+	dir_list="$dir $(curl -s $consul/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
+	# Get repo from consul to override repo value.
+	repo_tmp="$(curl -s $consul/v1/kv/inotif/config?raw | jq .repo | sed "s/\"/ /g")"
+	if [ ! -z "$repo_tmp" ]; then
+		repo="$repo_tmp"
+	fi
 }
 
 # Setup git init.
@@ -49,69 +74,49 @@ setup_repo(){
 		git add -A > /dev/null 2>&1
 		git commit -m "inotif-commit" > /dev/null 2>&1
 		git push origin $branch
-		echo "Pushed" $dir_list
+		echo "Pushed directory: $dir_list"
 	else 
 	 	echo "Nothing to commit";
 	fi
 }
 
-# Load inotif configuration
-if [ -f /etc/inotif.conf ]; then
-    CONF="/etc/inotif.conf"
-elif [ -f conf/inotif.conf ]; then
-    CONF="conf/inotif.conf"
-else
-    exit1 "can't found inotif.conf"
-fi
-. $CONF
+inotif_start() {
+	# Create inotif directory if doesn't exist.
+	# This directory will be used to store the monitored file or directory.
+	[ -d $home/.inotif ] || mkdir -p $home/.inotif
 
-user=$(whoami)
-home=$(getent passwd $user | cut -d: -f6)
-branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
-
-check_requirements
-
-# Clear variable to avoid cache.
-check_repo='' && dir_list=''
-dir_list="$dir $(curl -s $consul/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
-check_repo="$(curl -s $consul/v1/kv/inotif/config?raw | jq .repo | sed "s/\"/ /g")"
-if [ ! -z "$check_repo" ]; then
-	repo="$check_repo"
-fi
-
-# Create inotif directory if doesn't exist.
-# This directory will be used to store the monitored file or directory.
-[ -d $home/.inotif ] || mkdir -p $home/.inotif
-
-# Change to inotif directory.
-cd $home/.inotif
-# Just updating git repository if git already installed.
-# or reinit git when git not installed.
-if [ -d "$home/.inotif/.git" ]; then
-	# Only pull specific branch from repository.
-	git pull origin $branch > /dev/null 2>&1
-	git stash > /dev/null 2>&1
-	# Doing setup repo
-	setup_repo
-else
-	rm -rf $home/.inotif/* 
-	# Clone if remote repository already stored.
-	git clone -b $branch $repo ./ > /dev/null 2>&1 
-	if [ $? -eq 0 ]; then
+	# Change to inotif directory.
+	cd $home/.inotif
+	# Just updating git repository if git already installed.
+	# or reinit git when git not installed.
+	if [ -d "$home/.inotif/.git" ]; then
+		# Only pull specific branch from repository.
+		git pull origin $branch > /dev/null 2>&1
+		git stash > /dev/null 2>&1
 		# Doing setup repo
 		setup_repo
 	else
-		# Init git if on repository doesn't exists.
-		git init > /dev/null 2>&1
-		# Doing setup repo
-		setup_repo
+		rm -rf $home/.inotif/* 
+		# Clone if remote repository already stored.
+		git clone -b $branch $repo ./ > /dev/null 2>&1 
+		if [ $? -eq 0 ]; then
+			# Doing setup repo
+			setup_repo
+		else
+			# Init git if on repository doesn't exists.
+			git init > /dev/null 2>&1
+			# Doing setup repo
+			setup_repo
+		fi
 	fi
-fi
+}
 
-
-: '
+# Doing job every $interval minutes.
 while [ true ]; do
-	verify_interval $c_interval
+	load_environments
+	check_requirements
+	inotif_start
+
+	interval=$(verify_interval $interval)
 	sleep $interval
 done
-'
