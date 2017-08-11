@@ -1,3 +1,15 @@
-consul_address="192.168.114.35:8500"
-repo_url="http://git:git@192.168.114.35:8080/inotif.git"
-dir_default="/etc"
+#consul_address="192.168.114.35:8500"
+#repo_url="http://git:git@192.168.114.35:8080/inotif.git"
+#dir_default="/etc"
+
+# interval commit and push (in second) ::must be in range 5-10 minutes
+interval=300
+
+# consul address including port
+consul="192.168.114.35:8500"
+
+# complete git repo url
+repo="http://git:git@192.168.114.35:8080/inotif.git"
+
+# default directory that is monitored
+dir="/etc"
