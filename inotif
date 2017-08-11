@@ -1,6 +1,11 @@
 #!/bin/sh
 PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/bin:/usr/bin"
 #set -x
+
+# Define username and branch name for git config
+user=$(whoami)
+home=$(getent passwd $user | cut -d: -f6)
+
 # Store proccess id.
 echo $$ > $HOME/.inotif.pid
 
@@ -41,9 +46,7 @@ load_environments() {
 	fi
 	. $CONF
 
-	# Define username and branch name for git config
-	user=$(whoami)
-	home=$(getent passwd $user | cut -d: -f6)
+	# Get Primary IP for branch name.
 	branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
 
 	# Clear variable to avoid cache.
