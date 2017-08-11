@@ -7,7 +7,7 @@ user=$(whoami)
 home=$(getent passwd $user | cut -d: -f6)
 
 # Store proccess id.
-echo $$ > $HOME/.inotif.pid
+echo $$ > $home/.inotif.pid
 
 exit1() {
  	echo "$1"
