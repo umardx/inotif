@@ -114,7 +114,7 @@ inotif_start() {
 	fi
 }
 
-# Doing job every $interval minutes.
+# Doing job every $interval seconds.
 while [ true ]; do
 	load_environments
 	check_requirements
