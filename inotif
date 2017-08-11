@@ -1,38 +1,41 @@
 #!/bin/sh
 PATH="/sbin:/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/bin:/usr/bin"
-#@set -x
+#set -x
+# Store proccess id.
+echo $$ > $HOME/.inotif.pid
+
 exit1() {
-	echo "FAIL"
  	echo "$1"
  	exit 1;
 }
 
-# Load inotif configuration
-if [ -f /etc/inotif.conf ]; then
-    CONF="/etc/inotif.conf"
-elif [ -f conf/inotif.conf ]; then
-    CONF="conf/inotif.conf"
-else
-    exit1 "can't found inotif.conf"
-fi
-. $CONF
+# function for get verified interval
+verify_interval() {
+	local v=$(echo $1 | awk '( $1 >= 60) && ($1 <= 120) { print $1 }')
+	[ ! -z $v ] || v=$interval
+	echo $v
+}
 
-user=$(whoami)
-home=$(getent passwd $user | cut -d: -f6)
-branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
+check_requirements() {
+	# checking required variables
+	if [ -z $interval ] || [ -z $consul ] || [ -z $repo ] || [ -z $dir ]; then
+		exit1 "can't load variables completely."
+	fi
 
-# Clear variable to avoid cache.
-check_repo='' && dir_list=''
-dir_list="$dir_default $(curl -s $consul_address/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
-check_repo="$(curl -s $consul_address/v1/kv/inotif/config?raw | jq .repo_url | sed "s/\"/ /g")"
-if [ ! -z "$check_repo" ]; then
-	repo_url="$check_repo"
-fi
+	# checking dependency in remote ssh host
+	hash jq > /dev/null 2>&1 || exit1 "Errpr: jq not installed."
+	hash git > /dev/null 2>&1 || exit1 "Errpr: git not installed."
+	hash curl > /dev/null 2>&1 || exit1 "Errpr: curl not installed."
+	hash rsync > /dev/null 2>&1 || exit1 "Error: rsync not installed."
+
+	# checking branch_dir
+	[ -d $branch_dir > /dev/null 2>&1 ] || exit1 "The $branch_dir directory doesn't exist."
+}
 
 # Setup git init.
 setup_repo(){
 	git checkout -B $branch > /dev/null 2>&1
-	git remote add origin $repo_url > /dev/null 2>&1 || git remote set-url origin $repo_url > /dev/null 2>&1
+	git remote add origin $repo > /dev/null 2>&1 || git remote set-url origin $repo > /dev/null 2>&1
 	for dir_name in $dir_list; do		
 		if [ -d "$home/.inotif"$dir_name"" ] || mkdir -p "$home/.inotif"$dir_name""; then
 			# Rsync required folder that max size 1MB, and don't forget to exclude git config
@@ -52,6 +55,30 @@ setup_repo(){
 	fi
 }
 
+# Load inotif configuration
+if [ -f /etc/inotif.conf ]; then
+    CONF="/etc/inotif.conf"
+elif [ -f conf/inotif.conf ]; then
+    CONF="conf/inotif.conf"
+else
+    exit1 "can't found inotif.conf"
+fi
+. $CONF
+
+user=$(whoami)
+home=$(getent passwd $user | cut -d: -f6)
+branch="$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' | head -n1)" > /dev/null 2>&1
+
+check_requirements
+
+# Clear variable to avoid cache.
+check_repo='' && dir_list=''
+dir_list="$dir $(curl -s $consul/v1/kv/inotif/$branch?raw | jq .dir[] | sed "s/\"/ /g")"
+check_repo="$(curl -s $consul/v1/kv/inotif/config?raw | jq .repo | sed "s/\"/ /g")"
+if [ ! -z "$check_repo" ]; then
+	repo="$check_repo"
+fi
+
 # Create inotif directory if doesn't exist.
 # This directory will be used to store the monitored file or directory.
 [ -d $home/.inotif ] || mkdir -p $home/.inotif
@@ -69,7 +96,7 @@ if [ -d "$home/.inotif/.git" ]; then
 else
 	rm -rf $home/.inotif/* 
 	# Clone if remote repository already stored.
-	git clone -b $branch $repo_url ./ > /dev/null 2>&1 
+	git clone -b $branch $repo ./ > /dev/null 2>&1 
 	if [ $? -eq 0 ]; then
 		# Doing setup repo
 		setup_repo
@@ -80,3 +107,11 @@ else
 		setup_repo
 	fi
 fi
+
+
+: '
+while [ true ]; do
+	verify_interval $c_interval
+	sleep $interval
+done
+'
