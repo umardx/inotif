@@ -200,4 +200,8 @@ $ sudo cp inotif /usr/local/bin/
 $ sudo cp rc.d/inotif /etc/rc.d/
 $ sudo cp conf/inotif.conf /etc/
 ```
+Add this line in the end of file /etc/rc.conf
+```
+inotif_enable="YES"
+```
 Based on: [here](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [here](https://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
