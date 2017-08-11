@@ -76,7 +76,7 @@ setup_repo(){
 	if [ -n "$(git status --porcelain)" ]; then
 		git add -A > /dev/null 2>&1
 		git commit -m "inotif-commit" > /dev/null 2>&1
-		git push origin $branch
+		git push origin $branch > /dev/null
 		echo "Pushed directory: $dir_list"
 	else 
 	 	echo "Nothing to commit";
