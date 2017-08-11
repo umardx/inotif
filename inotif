@@ -54,7 +54,7 @@ setup_repo(){
 
 # Create inotif directory if doesn't exist.
 # This directory will be used to store the monitored file or directory.
-[-d $home/.inotif ] mkdir -p $home/.inotif
+[-d $home/.inotif ] || mkdir -p $home/.inotif
 
 # Change to inotif directory.
 cd $home/.inotif
