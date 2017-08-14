@@ -1,6 +1,6 @@
 ---
 - hosts: ubuntu
-  remote_user: ubuntu
+  remote_user: root
   become: true
   vars:
      basic_packages: [ 'jq', 'git', 'rsync', 'curl' ]
@@ -12,9 +12,26 @@
     - name: Install basic packages
       package: name={{ item }} state=latest
       with_items: basic_packages
-    
+
     - name: Copy inotif executable file to /usr/local/bin/
-      copy: src=../inotif dest="/usr/local/bin/inotif"
+      copy: src=../inotif dest="/usr/local/bin/inotif" mode=a+x
+
+    - name: Copy config inotif to /etc/
+      copy: src=../conf/inotif.conf dest="/etc/"
+
+    - name: Create file output log
+      copy:
+        content: ""
+        dest: /var/log/inotif.log
+        force: no
+        mode: 0666
+
+    - name: Create file output err
+      copy:
+        content: ""
+        dest: /var/log/inotif.err
+        force: no
+        mode: 0666
 
     - include: Task/FreeBSD-task.yml
       when: ansible_distribution == "FreeBSD"
