@@ -12,6 +12,9 @@
     - name: Install basic packages
       package: name={{ item }} state=latest
       with_items: basic_packages
+    
+    - name: Copy inotif executable file to /usr/local/bin/
+      copy: src=../inotif dest="/usr/local/bin/inotif"
 
     - include: Task/FreeBSD-task.yml
       when: ansible_distribution == "FreeBSD"
