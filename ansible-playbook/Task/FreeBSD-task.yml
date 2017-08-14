@@ -1,1 +1,6 @@
 ---
+# Install package sysutils/py-supervisor
+- name: Install py-supervisor
+  portinstall:
+    name: sysutils/py-supervisor
+    state: present

@@ -1,27 +1,24 @@
 ---
-
-- hosts: inotif
-  remote_user: root
-
+- hosts: ubuntu
+  remote_user: ubuntu
+  become: true
   vars:
      basic_packages: [ 'jq', 'git', 'rsync', 'curl' ]
-
+     supervisor_conf: "/etc/supervisor/conf.d/"
   tasks:
     - name: Create user inotif
       user: name=inotif shell=/bin/sh
 
-    - name: Install basic packages on FreeBSD
-        pkg: name={{ item }} state=installed
-        with_items: basic_packages
-        when: (ansible_distribution == 'FreeBSD')
-        
-    - name: Install basic packages on Debian
-        apt: name={{ item }} state=installed
-        with_items: basic_packages
-        when: (ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian')
+    - name: Install basic packages
+      package: name={{ item }} state=latest
+      with_items: basic_packages
 
-    - include Task/FreeBSD-task.yml
+    - include: Task/FreeBSD-task.yml
       when: ansible_distribution == "FreeBSD"
 
-    - include Task/Debian-task.yml
+    - include: Task/Debian-task.yml
       when: (ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian')
+
+  handlers:
+    - name: restart supervisor
+      service: name=supervisor state=restarted

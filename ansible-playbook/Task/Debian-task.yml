@@ -1,1 +1,16 @@
 ---
+- name: Update apt
+  apt: update_cache=yes
+
+# Install package supervisor
+- name: Install supervisor
+  apt: name=supervisor state=latest
+
+- name: Set up inotif conf
+  copy: src=supervisord.conf dest={{ supervisor_conf }}/inotif.conf
+
+- name: Reread supervisor
+  command: supervisorctl reread
+
+- name: Update supervisor
+  command: supervisorctl update
