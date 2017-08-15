@@ -1,82 +1,38 @@
 ---
-- hosts: debian6
+- hosts: debian7
   remote_user: root
   become: yes
   vars:
-     basic_packages: [ 'rsync', 'git', 'curl' ]
+     basic_packages: [ 'jq', 'rsync', 'git', 'curl' ]
   tasks:
     - name: Create user inotif
       user: name=inotif shell=/bin/sh
 
-    - apt_repository:
-        repo: deb http://archive.debian.org/debian/ squeeze contrib main non-free
-        state: present
-      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '6')
+    - name: Install debian7 requirement
+      include: Task/debian7-requirement.yml
+      # when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
 
-    - apt_repository:
-        repo: "{{ item }}"
-        state: present
-        with_items: 
-        - deb http://ftp.us.debian.org/debian/ wheezy main contrib non-free
-        - deb-src http://ftp.us.debian.org/debian/ wheezy main contrib non-free
-      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
-
-    # Install package python
-    - name: Install python
-      apt: name=python state=latest
-      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
-
-    - name: Install ja release squeeze-backport
-      apt:
-        name: jq
-        state: installed
-        default_release: squeeze-backports
-      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '6')
-
-    - name: Install ja release wheezy-backport
-      apt:
-        name: jq
-        state: installed
-        default_release: wheezy-backports
-      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
-
-    - name: Install ja release
-      apt:
-        name: jq
-        state: installed
+    - name: Install debian8 requirement
+      include: Task/debian8-requirement.yml
       when: (ansible_distribution == 'Debian' and ansible_distribution_version == '8')
-
 
     - name: Install basic packages
       package: name={{ item }} state=latest
       with_items: basic_packages
 
     - name: Copy inotif executable file to /usr/local/bin/
-      copy: src=../inotif dest="/usr/local/bin/inotif" mode=a+x
+      copy: src=../inotif dest="/usr/local/bin/inotif" mode=0777
 
     - name: Copy config inotif to /etc/
       copy: src=../conf/inotif.conf dest="/etc/"
-
-    - name: Create file output log
-      copy:
-        content: ""
-        dest: /var/log/inotif.log
-        force: no
-        mode: 0666
-
-    - name: Create file output err
-      copy:
-        content: ""
-        dest: /var/log/inotif.err
-        force: no
-        mode: 0666
 
     - include: Task/FreeBSD-task.yml
       when: ansible_distribution == "FreeBSD"
 
     - include: Task/Debian-task.yml
       when: (ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian')
-
-  handlers:
-    - name: restart supervisor
-      service: name=supervisor state=restarted
+    
+    - name: Restart supervisorctl
+      supervisorctl:
+        name: inotif
+        state: restarted
