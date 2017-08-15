@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: freebsd
   remote_user: root
   become: yes
   vars:
