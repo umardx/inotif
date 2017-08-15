@@ -7,7 +7,7 @@
   apt: name=supervisor state=latest
 
 - name: Set up inotif conf
-  copy: src=../conf/supervisord.conf dest={{ supervisor_conf }}/inotif.conf
+  copy: src=../conf/supervisord.conf dest=/etc/supervisor/conf.d/inotif.conf
 
 - name: Reread supervisor
   command: supervisorctl reread

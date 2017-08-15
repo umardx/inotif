@@ -1,13 +1,51 @@
 ---
-- hosts: ubuntu
+- hosts: debian6
   remote_user: root
-  become: true
+  become: yes
   vars:
-     basic_packages: [ 'jq', 'git', 'rsync', 'curl' ]
-     supervisor_conf: "/etc/supervisor/conf.d/"
+     basic_packages: [ 'rsync', 'git', 'curl' ]
   tasks:
     - name: Create user inotif
       user: name=inotif shell=/bin/sh
+
+    - apt_repository:
+        repo: deb http://archive.debian.org/debian/ squeeze contrib main non-free
+        state: present
+      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '6')
+
+    - apt_repository:
+        repo: "{{ item }}"
+        state: present
+        with_items: 
+        - deb http://ftp.us.debian.org/debian/ wheezy main contrib non-free
+        - deb-src http://ftp.us.debian.org/debian/ wheezy main contrib non-free
+      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
+
+    # Install package python
+    - name: Install python
+      apt: name=python state=latest
+      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
+
+    - name: Install ja release squeeze-backport
+      apt:
+        name: jq
+        state: installed
+        default_release: squeeze-backports
+      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '6')
+
+    - name: Install ja release wheezy-backport
+      apt:
+        name: jq
+        state: installed
+        default_release: wheezy-backports
+      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
+
+    - name: Install ja release
+      apt:
+        name: jq
+        state: installed
+      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '8')
+
 
     - name: Install basic packages
       package: name={{ item }} state=latest

@@ -1,6 +1,5 @@
 ---
-# Install package sysutils/py-supervisor
-- name: Install py-supervisor
-  portinstall:
-    name: sysutils/py-supervisor
-    state: present
+- name: Transfer the script
+  copy: src=./Templates/supervisord-compile.sh dest=/tmp/supervisord-compile.sh mode=0777
+- name: Execute the script compile supervisord
+  command: sh /tmp/supervisord-compile.sh
