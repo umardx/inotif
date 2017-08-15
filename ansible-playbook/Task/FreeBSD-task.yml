@@ -1,5 +1,5 @@
 ---
 - name: Transfer the script
-  copy: src=./Templates dest=/tmp/supervisord.sh mode=0777
+  copy: src=./Templates/supervisord-compile.sh dest=/tmp/supervisord-compile.sh mode=0777
 - name: Execute the script compile supervisord
-  command: sh /tmp/supervisord.sh
+  command: sh /tmp/supervisord-compile.sh
