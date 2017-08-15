@@ -1,5 +1,5 @@
 ---
-- hosts: debian7
+- hosts: all
   remote_user: root
   become: yes
   vars:
@@ -10,11 +10,11 @@
 
     - name: Install debian7 requirement
       include: Task/debian7-requirement.yml
-      # when: (ansible_distribution == 'Debian' and ansible_distribution_version == '7')
+      when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '7'
 
     - name: Install debian8 requirement
       include: Task/debian8-requirement.yml
-      when: (ansible_distribution == 'Debian' and ansible_distribution_version == '8')
+      when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '8'
 
     - name: Install basic packages
       package: name={{ item }} state=latest
@@ -30,7 +30,7 @@
       when: ansible_distribution == "FreeBSD"
 
     - include: Task/Debian-task.yml
-      when: (ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian')
+      when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
     
     - name: Restart supervisorctl
       supervisorctl:

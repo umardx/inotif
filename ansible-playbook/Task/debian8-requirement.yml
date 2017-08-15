@@ -1,4 +1,1 @@
 ---
-- name: Install jq command
-  command: apt-get -yqq -t jessie-backports install "jq"
-  register: install-jq
