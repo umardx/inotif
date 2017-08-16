@@ -190,8 +190,15 @@ $ sudo /bin/systemctl restart fcgiwrap nginx
     ```
 5. Copy file `hosts.example` to `hosts` and edit data with IP Client
 
-6. Start ansible
+6. Run playbook*
     ```
     $ ansible-playbook -i hosts playbook.yml
     ```
+##### *note:
+- If agent is FreeBSD, make sure in FreeBSD pkg was installed.
 
+    Run this from ansible server: 
+    ```
+    $ ansible -m raw -a "pkg install -y python27" freebsd
+    ```
+    Run playbook.
