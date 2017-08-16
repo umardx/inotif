@@ -171,37 +171,27 @@ then check the owner:group of /var/run/fcgiwrap.socket (it should be www-data:ww
 $ sudo /bin/systemctl restart fcgiwrap nginx
 ```
 
-# Setup for Clent
-#### Tested on Ubuntu 16.04, Debian 8.8, and FreeBSD 10.3.
-Clone git repository
-```
-$ git clone https://github.com/umardx/inotif.git
-$ cd ./inotif
-```
-Create user: `inotif` with shell `/bin/sh`
-```bash
-$ sudo adduser inotif
-```
-## Debian, or Ubuntu
-Installing inotif as service
-```bash
-$ sudo cp ./inotif /usr/local/bin/
-$ sudo cp init.d/inotif /etc/init.d/
-$ sudo cp conf/inotif.conf /etc/
-$ sudo update-rc.d inotif defaults
-$ sudo update-rc.d inotif enable
-```
-Based on [here](https://www.digitalocean.com/community/tutorials/how-to-configure-a-linux-service-to-start-automatically-after-a-crash-or-reboot-part-1-practical-examples)
+# Setup for Client (Agent)
+#### Tested on Ubuntu 16.04, Debian 7.11, Debian 8.8, and FreeBSD 11.1.
 
-## FreeBSD
-Installing inotif as service
-```bash
-$ sudo cp inotif /usr/local/bin/
-$ sudo cp rc.d/inotif /etc/rc.d/
-$ sudo cp conf/inotif.conf /etc/
-```
-Add this line in the end of file /etc/rc.conf
-```
-inotif_enable="YES"
-```
-Based on: [here](https://www.freebsd.org/doc/handbook/configtuning-starting-services.html) and [here](https://joekuan.wordpress.com/2010/05/09/quick-tutorial-on-how-to-create-a-freebsd-system-startup-script/)
+1. Set up ssh-key pair to all client
+
+2. Clone git repository
+    ```
+    $ git clone https://github.com/umardx/inotif.git
+    ```
+3. Edit config file:
+    - In folder `conf`, copy file `inotif.conf.example` to `inotif.conf` and set-up parameter there (adjust to your network setting).
+    - In folder `conf`, copy file `supervisord.conf.example` to `supervisord.conf` and set-up parameter there (optional, if you just copy-paste it will run).
+
+4. Go to ansible playbook folder
+    ```
+    $ cd ansible-playbook
+    ```
+5. Copy file `hosts.example` to `hosts` and edit data with IP Client
+
+6. Start ansible
+    ```
+    $ ansible-playbook -i hosts playbook.yml
+    ```
+
