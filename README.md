@@ -174,6 +174,15 @@ $ sudo /bin/systemctl restart fcgiwrap nginx
 # Setup for Client (Agent)
 #### Tested on Ubuntu 16.04, Debian 7.11, Debian 8.8, and FreeBSD 11.1.
 
+- Before running playbook, create folder `inotif` in Consul
+- In folder inotif, create folder with IP address agent. The key is `dir` with value is folder you want to track. 
+- Create folder `config` with two parameter, `repo` is repo url gitweb and `dir` is folder default you want to track.
+Final configuration in Consul like this:
+-   ![sas](https://raw.githubusercontent.com/umardx/inotif/master/Consul.png)
+-   ![](https://raw.githubusercontent.com/umardx/inotif/master/SS%20Consul-config.png)
+
+After setup Consul, you can run playbook with this step:
+
 1. Set up ssh-key pair to all client
 
 2. Clone git repository
