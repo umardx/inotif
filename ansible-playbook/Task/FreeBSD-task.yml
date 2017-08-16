@@ -1,6 +1,25 @@
 ---
-- name: Transfer the script
-  copy: src=./Templates/supervisord-compile.sh dest=/tmp/supervisord-compile.sh mode=0777
-  
-- name: Execute the script compile supervisord
-  command: sh /tmp/supervisord-compile.sh
+- name: Install package sysutils/py-supervisor
+  portinstall:
+    name: sysutils/py-supervisor
+    state: present
+
+- name: Transfer the supervisord.conf conf
+  copy: src=../conf/supervisord.conf dest=/usr/local/etc/supervisord.ini
+
+- name: Add a line to supervisord.conf if it does not exist
+  blockinfile: 
+    dest: /usr/local/etc/supervisord.conf
+    block: |
+      [include] 
+      files = /usr/local/etc/supervisord.ini
+
+- name: Append `supervisord_enable="YES"` if it not exist.
+  lineinfile:
+    dest: /etc/rc.conf
+    line: 'supervisord_enable="YES"'
+
+- name: Append `inotif_enable="YES"` if it not exist.
+  lineinfile:
+    dest: /etc/rc.conf
+    line: 'inotif_enable="YES"'
