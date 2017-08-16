@@ -178,8 +178,8 @@ $ sudo /bin/systemctl restart fcgiwrap nginx
 - In folder inotif, create folder with IP address agent. The key is `dir` with value is folder you want to track. 
 - Create folder `config` with two parameter, `repo` is repo url gitweb and `dir` is folder default you want to track.
 Final configuration in Consul like this:
--   ![sas](https://raw.githubusercontent.com/umardx/inotif/master/Consul.png)
--   ![](https://raw.githubusercontent.com/umardx/inotif/master/SS%20Consul-config.png)
+-   ![sas](https://raw.githubusercontent.com/umardx/inotif/master/img/Consul.png)
+-   ![](https://raw.githubusercontent.com/umardx/inotif/master/img/SS%20Consul-config.png)
 
 After setup Consul, you can run playbook with this step:
 
