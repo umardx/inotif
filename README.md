@@ -178,8 +178,8 @@ $ sudo /bin/systemctl restart fcgiwrap nginx
 - In folder inotif, create folder with IP address agent. The key is `dir` with value is folder you want to track. 
 - Create folder `config` with two parameter, `repo` is repo url gitweb and `dir` is folder default you want to track.
 Final configuration in Consul like this:
--   ![sas](https://raw.githubusercontent.com/umardx/inotif/master/img/Consul.png)
--   ![](https://raw.githubusercontent.com/umardx/inotif/master/img/SS%20Consul-config.png)
+-   ![Consul folder](https://raw.githubusercontent.com/umardx/inotif/master/img/Consul.png)
+-   ![Consul config](https://raw.githubusercontent.com/umardx/inotif/master/img/SS%20Consul-config.png)
 
 After setup Consul, you can run playbook with this step:
 
@@ -197,17 +197,29 @@ After setup Consul, you can run playbook with this step:
     ```
     $ cd ansible-playbook
     ```
-5. Copy file `hosts.example` to `hosts` and edit data with IP Client
+5. Copy file `hosts.example` to `hosts` and edit data with IP Client*
 
-6. Run playbook*
+6. Run playbook**
     ```
     $ ansible-playbook -i hosts playbook.yml
     ```
-##### *note:
-- If agent is FreeBSD, make sure in FreeBSD pkg was installed.
+##### note:
+
+- If Client is FreeBSD, add this line after IP Address*
+    ```
+    $ ansible_shell_type=csh ansible_python_interpreter='/usr/local/bin/python2.7'
+    ```
+
+- If agent is FreeBSD, make sure in FreeBSD pkg was installed.**
 
     Run this from ansible server: 
     ```
     $ ansible -m raw -a "pkg install -y python27" freebsd
+    ```
+    Run playbook.
+
+- If agent is Ubuntu, run this from ansible server:**
+    ```
+    $ ansible -m raw -a "apt install -y python" -i hosts ubuntu
     ```
     Run playbook.
