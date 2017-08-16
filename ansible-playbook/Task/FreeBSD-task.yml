@@ -23,3 +23,6 @@
   lineinfile:
     dest: /etc/rc.conf
     line: 'inotif_enable="YES"'
+
+- name: start supervisord
+  service: name=supervisord state=restarted

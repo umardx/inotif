@@ -8,10 +8,6 @@
     - name: Create user inotif
       user: name=inotif shell=/bin/sh
 
-    - name: Install debian7 requirement
-      include: Task/debian7-requirement.yml
-      when: ansible_distribution == 'Debian' and ansible_distribution_major_version == '7'
-
     - name: Install basic packages
       package: name={{ item }} state=present
       with_items: basic_packages
@@ -27,14 +23,13 @@
 
     - include: Task/Debian-task.yml
       when: ansible_distribution == 'Ubuntu' or ansible_distribution == 'Debian'
-    
-    - name: Reread supervisor
-      command: supervisorctl reread
 
-    - name: Update supervisor
-      command: supervisorctl update
+    - name: Reread and add supervisorctl
+      supervisorctl:
+        name: inotif
+        state: present
 
-    - name: Restart supervisorctl
+    - name: Update and restart supervisorctl
       supervisorctl:
         name: inotif
         state: restarted
